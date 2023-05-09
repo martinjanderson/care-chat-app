@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "152625161723",
+    "project_id": "care-chat-386021",
+    "storage_bucket": "care-chat-386021.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:152625161723:android:1f1adecb0f6053092b175e",
+        "android_client_info": {
+          "package_name": "com.example.care_chat_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "152625161723-jc1mi7u2o84dunf5tkl3g20uass627nc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgg4HGFSZmTJmDC-1pAuPiD_qU6-lN_iQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "152625161723-jc1mi7u2o84dunf5tkl3g20uass627nc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "152625161723-cf2aomq486j9ktj2oq6m65rk1pga7mu8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.careChatApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
