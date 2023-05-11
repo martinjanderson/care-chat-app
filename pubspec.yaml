@@ -40,6 +40,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutterfire_ui: ^0.4.3+20
   flutter_dotenv: ^5.0.2
+  http: ^0.13.6
 
 dev_dependencies:
   flutter_test:
