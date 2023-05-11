@@ -85,7 +85,7 @@ class _ChatScreenState extends State<ChatScreen> {
               );
             },
           ),
-          title: const Text('Chat'),
+          title: const Text('Care Chat'),
           actions: [
             const SignOutButton(),
           ],
@@ -152,17 +152,15 @@ class _MessageListState extends State<MessageList> {
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
                   final message = snapshot.data![index];
-
-                  return Card(
-                      child: ListTile(
+                  return ListTile(
+                    contentPadding: EdgeInsets.all(2),
                     leading: CircleAvatar(
-                      backgroundImage:
-                          NetworkImage('http://localhost:3000/avatar/$userId'),
+                      child: Text(getInitials(user, message)),
                     ),
                     title: Text(getDisplayName(user, message)),
                     subtitle: Text(message.text),
-                    tileColor: getTileColor(user, message),
-                  ));
+                    //tileColor: getTileColor(user, message),
+                  );
                 },
               );
           }
@@ -173,7 +171,7 @@ class _MessageListState extends State<MessageList> {
 
   Color getTileColor(user, message) {
     if (user.uid == message.userId) {
-      return Colors.blue[100]!;
+      return Colors.white;
     } else {
       return Colors.grey[300]!;
     }
@@ -184,6 +182,25 @@ class _MessageListState extends State<MessageList> {
       return user.displayName;
     } else {
       return 'Bot';
+    }
+  }
+
+  String getInitials(user, message) {
+    if (user.uid == message.userId) {
+      if (user.displayName != null && user.displayName!.isNotEmpty) {
+        List<String> names = user.displayName!.split(' ');
+        String initials = '';
+        for (var name in names) {
+          if (name.isNotEmpty) {
+            initials += name[0].toUpperCase();
+          }
+        }
+        return initials;
+      } else {
+        return '';
+      }
+    } else {
+      return 'B';
     }
   }
 }
