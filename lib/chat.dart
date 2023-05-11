@@ -158,7 +158,7 @@ class _MessageListState extends State<MessageList> {
                       child: Text(getInitials(user, message)),
                     ),
                     title: Text(getDisplayName(user, message)),
-                    subtitle: Text(message.text),
+                    subtitle: SelectableText(message.text),
                     //tileColor: getTileColor(user, message),
                   );
                 },
@@ -254,7 +254,7 @@ class _MessageInputState extends State<MessageInput> {
     await chatApi.submitMessage(text: text);
     chatApi.fetchMessages(messageLimit: 50);
     final timer = Timer(
-      const Duration(seconds: 4),
+      const Duration(seconds: 5),
       () {
         chatApi.fetchMessages(messageLimit: 50);
       },
