@@ -17,6 +17,7 @@ class AuthGate extends StatelessWidget {
             providerConfigs: const [
               EmailProviderConfiguration(),
             ],
+            showAuthActionSwitch: false,
             headerBuilder: (context, constraints, shrinkOffset) {
               return Padding(
                 padding: const EdgeInsets.all(20),
