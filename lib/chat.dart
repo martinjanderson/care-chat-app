@@ -10,57 +10,100 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfire_ui/auth.dart';
+import 'dart:async';
 import 'package:provider/provider.dart';
 
 import 'user_provider.dart';
+import 'chat_api.dart';
+import 'message.dart';
 
-class ChatScreen extends StatelessWidget {
+// A new InheritedWidget that provides a ChatApi to its descendants.
+// This is used to provide the ChatApi to the MessageList and MessageInput widgets.
+class ChatApiProvider extends InheritedWidget {
+  final ChatApi chatApi;
+
+  ChatApiProvider({
+    Key? key,
+    required this.chatApi,
+    required Widget child,
+  }) : super(key: key, child: child);
+
+  static ChatApiProvider? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<ChatApiProvider>();
+  }
+
+  @override
+  bool updateShouldNotify(ChatApiProvider old) => chatApi != old.chatApi;
+}
+
+class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key});
+
+  @override
+  _ChatScreenState createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  late ChatApi _chatApi;
+
+  @override
+  void initState() {
+    super.initState();
+    _chatApi = ChatApi(baseUrl: 'http://localhost:3000');
+  }
+
+  @override
+  void dispose() {
+    _chatApi.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.person),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute<ProfileScreen>(
-                builder: (context) => ProfileScreen(
-                  appBar: AppBar(
-                    title: const Text('User Profile'),
-                    leading: BackButton(onPressed: () {
-                      Provider.of<UserProvider>(context, listen: false)
-                          .reload();
-                      Navigator.of(context).pop();
-                    }),
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute<ProfileScreen>(
+                  builder: (context) => ProfileScreen(
+                    appBar: AppBar(
+                      title: const Text('User Profile'),
+                      leading: BackButton(onPressed: () {
+                        Provider.of<UserProvider>(context, listen: false)
+                            .reload();
+                        Navigator.of(context).pop();
+                      }),
+                    ),
+                    actions: [
+                      SignedOutAction((context) {
+                        Navigator.of(context).pop();
+                      })
+                    ],
                   ),
-                  actions: [
-                    SignedOutAction((context) {
-                      Navigator.of(context).pop();
-                    })
-                  ],
                 ),
-              ),
-            );
-          },
-        ),
-        title: const Text('Chat'),
-        actions: [
-          const SignOutButton(),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: MessageList(),
+              );
+            },
           ),
-          const Divider(height: 1),
-          MessageInput(),
-        ],
-      ),
-    );
+          title: const Text('Chat'),
+          actions: [
+            const SignOutButton(),
+          ],
+        ),
+        body: ChatApiProvider(
+          chatApi: _chatApi,
+          child: Column(
+            children: [
+              Expanded(
+                child: MessageList(),
+              ),
+              const Divider(height: 1),
+              MessageInput(),
+            ],
+          ),
+        ));
   }
 }
 
@@ -90,47 +133,60 @@ class _MessageListState extends State<MessageList> {
     return Consumer<UserProvider>(builder: (context, userProvider, child) {
       final user = userProvider.user;
       final userId = user?.uid ?? 'null_id';
-      testQuery(userId);
+      ChatApi chatApi = ChatApiProvider.of(context)!.chatApi;
+      chatApi.fetchMessages(messageLimit: 50);
 
-      return StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('messages')
-            .where('user.uid', isEqualTo: userId)
-            .orderBy('timestamp', descending: true)
-            .limit(20)
-            .snapshots(),
+      return StreamBuilder<List<Message>>(
+        stream: chatApi.messageStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final messages = snapshot.data!.docs;
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+              return Text('Loading...');
+            default:
+              return ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(8),
+                reverse: true,
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) {
+                  final message = snapshot.data![index];
 
-          return ListView.builder(
-            controller: _scrollController,
-            reverse: true,
-            itemCount: messages.length,
-            itemBuilder: (context, index) {
-              final message = messages[index];
-              final data = message.data() as Map<String, dynamic>;
-              final user = data['user'] as Map<String, dynamic>;
-              final uid = user['uid'] as String;
-              final displayName = user['displayName'] as String;
-              final photoURL = user['photoURL'] ?? '';
-              final text = data['text'] as String;
-
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(photoURL),
-                ),
-                title: Text(displayName),
-                subtitle: Text(text),
+                  return Card(
+                      child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage:
+                          NetworkImage('http://localhost:3000/avatar/$userId'),
+                    ),
+                    title: Text(getDisplayName(user, message)),
+                    subtitle: Text(message.text),
+                    tileColor: getTileColor(user, message),
+                  ));
+                },
               );
-            },
-          );
+          }
         },
       );
     });
+  }
+
+  Color getTileColor(user, message) {
+    if (user.uid == message.userId) {
+      return Colors.blue[100]!;
+    } else {
+      return Colors.grey[300]!;
+    }
+  }
+
+  String getDisplayName(user, message) {
+    if (user.uid == message.userId) {
+      return user.displayName;
+    } else {
+      return 'Bot';
+    }
   }
 }
 
@@ -148,6 +204,7 @@ class _MessageInputState extends State<MessageInput> {
   @override
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(builder: (context, userProvider, child) {
+      ChatApi chatApi = ChatApiProvider.of(context)!.chatApi;
       final user = userProvider.user;
       return Row(
         children: [
@@ -155,7 +212,7 @@ class _MessageInputState extends State<MessageInput> {
           Expanded(
             child: TextField(
               controller: _controller,
-              onSubmitted: (event) => submitMessage(user),
+              onSubmitted: (event) => submitMessage(chatApi),
               focusNode: myFocusNode,
               decoration: const InputDecoration(
                 border: InputBorder.none,
@@ -165,7 +222,7 @@ class _MessageInputState extends State<MessageInput> {
           ),
           IconButton(
             icon: const Icon(Icons.send),
-            onPressed: () => submitMessage(user),
+            onPressed: () => submitMessage(chatApi),
           ),
           const SizedBox(width: 8),
         ],
@@ -174,30 +231,20 @@ class _MessageInputState extends State<MessageInput> {
   }
 
   // An async function that submits the message Firestore.
-  void submitMessage(User? user) async {
+  void submitMessage(ChatApi chatApi) async {
     final text = _controller.text;
     if (text.isEmpty) {
       return;
     }
-    final uid = user!.uid;
-    final displayName = user.displayName;
-    final photoURL = user.photoURL;
-
-    final data = {
-      'user': {
-        'uid': uid,
-        'displayName': displayName,
-        'photoURL': photoURL,
+    await chatApi.submitMessage(text: text);
+    chatApi.fetchMessages(messageLimit: 50);
+    final timer = Timer(
+      const Duration(seconds: 4),
+      () {
+        chatApi.fetchMessages(messageLimit: 50);
       },
-      'text': text,
-      'timestamp': FieldValue.serverTimestamp(),
-    };
-
-    await FirebaseFirestore.instance.collection('messages').add(data);
-
+    );
     _controller.clear();
     myFocusNode.requestFocus();
   }
 }
-
-void testQuery(userId) {}
