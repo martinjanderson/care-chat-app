@@ -1,14 +1,14 @@
 // chat_room.dart
 import 'message.dart';
 
-class ChatRoom {
+class Room {
   final String id;
   final String ownerId;
   final String botId;
   final List<String> participantIds;
   final List<Message> messages;
 
-  ChatRoom({
+  Room({
     required this.id,
     required this.ownerId,
     required this.botId,
@@ -16,13 +16,13 @@ class ChatRoom {
     required this.messages,
   });
 
-  factory ChatRoom.fromJson(Map<String, dynamic> json) {
-    //Return a ChatRoom object from a JSON object with Messages inside
+  factory Room.fromJson(Map<String, dynamic> json) {
+    //Return a Room object from a JSON object with Messages inside
     List<Message> messages = [];
     for (var message in json['messages']) {
       messages.add(Message.fromJson(message));
     }
-    return ChatRoom(
+    return Room(
       id: json['id'],
       ownerId: json['ownerId'],
       botId: json['botId'],

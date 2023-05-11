@@ -3,12 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'chat_room.dart';
+import 'room.dart';
 import 'message.dart';
 
 class ChatApi {
   final String baseUrl;
-  late ChatRoom chatRoom;
+  late Room _room;
 
   ChatApi({required this.baseUrl});
 
@@ -32,8 +32,8 @@ class ChatApi {
           'Authorization': 'Bearer $idToken',
         });
     if (response.statusCode == 200) {
-      chatRoom = ChatRoom.fromJson(jsonDecode(response.body));
-      _messageStreamController.add(chatRoom.messages);
+      _room = Room.fromJson(jsonDecode(response.body));
+      _messageStreamController.add(_room.messages);
     } else {
       throw Exception('Failed to load chat room');
     }
@@ -46,7 +46,7 @@ class ChatApi {
     }
     MessageInput input = MessageInput(text: text);
     final idToken = await user.getIdToken();
-    String roomId = chatRoom.id;
+    String roomId = _room.id;
     final response = await http.post(
       Uri.parse('$baseUrl/api/room/$roomId/messages'),
       headers: {
@@ -65,7 +65,6 @@ class ChatApi {
     } else if (response.statusCode == 404) {
       throw Exception('Room not found');
     } else {
-      print(response);
       throw Exception('Failed to submit message');
     }
   }
