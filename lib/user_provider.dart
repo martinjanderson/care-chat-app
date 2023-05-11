@@ -22,10 +22,4 @@ class UserProvider extends ChangeNotifier {
   User? _user;
 
   User? get user => _user;
-
-  String get displayName => _user?.displayName ?? 'No display name';
-
-  String get email => _user?.email ?? 'No email address';
-
-  String get photoURL => _user?.photoURL ?? 'No photo URL';
 }

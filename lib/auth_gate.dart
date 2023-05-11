@@ -14,20 +14,35 @@ class AuthGate extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return SignInScreen(
-            providerConfigs: const [
-              EmailProviderConfiguration(),
-            ],
-            showAuthActionSwitch: false,
-            headerBuilder: (context, constraints, shrinkOffset) {
-              return Padding(
-                padding: const EdgeInsets.all(20),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Image.asset('flutterfire_300x.png'),
-                ),
-              );
-            },
-          );
+              providerConfigs: const [
+                EmailProviderConfiguration(),
+              ],
+              sideBuilder: (context, constraints) {
+                return Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Care Chat',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 80,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Demo App: v0.0.1',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 16,
+                                fontStyle: FontStyle.italic),
+                          ),
+                        ]));
+              },
+              showAuthActionSwitch: false);
         }
 
         return const ChatScreen();
