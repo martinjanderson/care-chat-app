@@ -50,11 +50,13 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     if (kReleaseMode) {
-      _chatApi =
-          ChatApi(baseUrl: 'https://care-chat-api-wolbffcavq-wl.a.run.app');
+      _chatApi = ChatApi(
+          baseUrl: 'care-chat-api-wolbffcavq-wl.a.run.app',
+          urlProtocol: 'https');
     } else {
-      _chatApi = ChatApi(baseUrl: 'http://localhost:3000');
+      _chatApi = ChatApi(baseUrl: 'localhost:3000', urlProtocol: 'http');
     }
+    _chatApi.connectToSocket();
   }
 
   @override
@@ -297,12 +299,12 @@ class _MessageInputState extends State<MessageInput> {
     }
     await chatApi.submitMessage(text: text);
     chatApi.fetchMessages(messageLimit: 50);
-    final timer = Timer(
-      const Duration(seconds: 5),
-      () {
-        chatApi.fetchMessages(messageLimit: 50);
-      },
-    );
+    // final timer = Timer(
+    //   const Duration(seconds: 5),
+    //   () {
+    //     chatApi.fetchMessages(messageLimit: 50);
+    //   },
+    // );
     _controller.clear();
     myFocusNode.requestFocus();
   }
