@@ -3,30 +3,27 @@ class Message {
   final String id;
   final String userId;
   final String text;
-  // final DateTime createdAt;
+  final DateTime createdAt;
 
   Message({
     required this.id,
     required this.userId,
     required this.text,
+    required this.createdAt,
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
-    if (json['id'] is! String) {
-      throw Exception('Expected id to be a String');
-    }
-    if (json['userId'] is! String) {
-      throw Exception('Expected userId to be a String');
-    }
-    if (json['text'] is! String) {
-      throw Exception('Expected text to be a String');
-    }
+    int seconds = json['createdAt']['_seconds'];
+    int nanoseconds = json['createdAt']['_nanoseconds'];
+    int milliseconds = seconds * 1000 + nanoseconds ~/ 1000000;
+
+    DateTime createdAt = DateTime.fromMillisecondsSinceEpoch(milliseconds);
 
     return Message(
       id: json['id'],
       userId: json['userId'],
       text: json['text'],
-      // DateTime.parse(json['createdAt']),
+      createdAt: createdAt,
     );
   }
 }

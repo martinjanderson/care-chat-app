@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutterfire_ui/auth.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 
 import 'user_provider.dart';
 import 'chat_api.dart';
@@ -47,7 +49,12 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    _chatApi = ChatApi(baseUrl: 'http://localhost:3000');
+    if (kReleaseMode) {
+      _chatApi =
+          ChatApi(baseUrl: 'https://care-chat-api-wolbffcavq-wl.a.run.app');
+    } else {
+      _chatApi = ChatApi(baseUrl: 'http://localhost:3000');
+    }
   }
 
   @override
@@ -157,8 +164,8 @@ class _MessageListState extends State<MessageList> {
                     leading: CircleAvatar(
                       child: Text(getInitials(user, message)),
                     ),
-                    title: Text(getDisplayName(user, message)),
-                    subtitle: SelectableText(message.text),
+                    title: SelectableText(message.text),
+                    subtitle: Text(getDisplayNameAndMessageTime(user, message)),
                     //tileColor: getTileColor(user, message),
                   );
                 },
@@ -177,11 +184,12 @@ class _MessageListState extends State<MessageList> {
     }
   }
 
-  String getDisplayName(user, message) {
+  String getDisplayNameAndMessageTime(user, message) {
+    String formattedTime = DateFormat('jm').format(message.createdAt);
     if (user.uid == message.userId) {
-      return user.displayName;
+      return user.displayName + ' - ' + formattedTime;
     } else {
-      return 'Bot';
+      return 'Bot - $formattedTime';
     }
   }
 

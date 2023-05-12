@@ -48,7 +48,7 @@ class HomeScreen extends StatelessWidget {
             Consumer<UserProvider>(
               builder: (context, userProvider, child) {
                 return Text(
-                  userProvider.displayName,
+                  "Hello",
                   style: Theme.of(context).textTheme.displaySmall,
                 );
               },
