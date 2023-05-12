@@ -152,11 +152,42 @@ class _MessageListState extends State<MessageList> {
             case ConnectionState.waiting:
               return Text('Loading...');
             default:
-              return ListView.builder(
+              return ListView.separated(
                 controller: _scrollController,
                 padding: const EdgeInsets.all(8),
                 reverse: true,
                 itemCount: snapshot.data!.length,
+                separatorBuilder: (context, index) {
+                  final thisMessage = snapshot.data![index];
+                  final prevMessage = index < snapshot.data!.length - 1
+                      ? snapshot.data![index + 1]
+                      : null;
+                  if (prevMessage != null &&
+                      !isSameDate(
+                          thisMessage.createdAt, prevMessage.createdAt)) {
+                    return Center(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 2.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.0),
+                          color: Colors.grey[300],
+                        ),
+                        child: Text(
+                          DateFormat('EEEE, MMMM d')
+                              .format(thisMessage.createdAt),
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    );
+                  } else {
+                    return Container(); // empty separator
+                  }
+                },
                 itemBuilder: (context, index) {
                   final message = snapshot.data![index];
                   return ListTile(
@@ -166,7 +197,6 @@ class _MessageListState extends State<MessageList> {
                     ),
                     title: SelectableText(message.text),
                     subtitle: Text(getDisplayNameAndMessageTime(user, message)),
-                    //tileColor: getTileColor(user, message),
                   );
                 },
               );
@@ -174,6 +204,12 @@ class _MessageListState extends State<MessageList> {
         },
       );
     });
+  }
+
+  bool isSameDate(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 
   Color getTileColor(user, message) {
