@@ -195,7 +195,12 @@ class _MessageListState extends State<MessageList> {
                   return ListTile(
                     contentPadding: EdgeInsets.all(2),
                     leading: CircleAvatar(
-                      child: Text(getInitials(user, message)),
+                      backgroundColor: getAvatarColor(user, message),
+                      child: Text(getInitials(user, message),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          )),
                     ),
                     title: SelectableText(message.text),
                     subtitle: Text(getDisplayNameAndMessageTime(user, message)),
@@ -214,18 +219,22 @@ class _MessageListState extends State<MessageList> {
         date1.day == date2.day;
   }
 
-  Color getTileColor(user, message) {
+  Color getAvatarColor(user, message) {
     if (user.uid == message.userId) {
-      return Colors.white;
+      return Colors.blue[500]!;
     } else {
-      return Colors.grey[300]!;
+      return Colors.grey[500]!;
     }
   }
 
   String getDisplayNameAndMessageTime(user, message) {
     String formattedTime = DateFormat('jm').format(message.createdAt);
     if (user.uid == message.userId) {
-      return user.displayName + ' - ' + formattedTime;
+      if (user.displayName != null && user.displayName!.isNotEmpty) {
+        return user.displayName + ' - ' + formattedTime;
+      } else {
+        return 'You - $formattedTime';
+      }
     } else {
       return 'Bot - $formattedTime';
     }
@@ -243,7 +252,7 @@ class _MessageListState extends State<MessageList> {
         }
         return initials;
       } else {
-        return '';
+        return 'Y';
       }
     } else {
       return 'B';
