@@ -44,11 +44,39 @@ class ChatApi {
     }
   }
 
+  // A method to submit a command to the server /api/room/:roomId/command
+  submitCommand({required String text}) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user signed in');
+    }
+
+    MessageInput input = MessageInput(text: text);
+    final idToken = await user.getIdToken();
+    String roomId = _room.id;
+    final response = await http.post(
+      Uri.parse('$urlProtocol://$baseUrl/api/room/$roomId/command'),
+      headers: {
+        'Authorization': 'Bearer $idToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(input.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      _room = Room.fromJson(jsonDecode(response.body));
+      _messageStreamController.add(_room.messages);
+    } else {
+      throw Exception('Failed to execute command');
+    }
+  }
+
   Future<Message> submitMessage({required String text}) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       throw Exception('No user signed in');
     }
+
     MessageInput input = MessageInput(text: text);
     final idToken = await user.getIdToken();
     String roomId = _room.id;

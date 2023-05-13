@@ -297,14 +297,17 @@ class _MessageInputState extends State<MessageInput> {
     if (text.isEmpty) {
       return;
     }
-    await chatApi.submitMessage(text: text);
-    chatApi.fetchMessages(messageLimit: 50);
-    // final timer = Timer(
-    //   const Duration(seconds: 5),
-    //   () {
-    //     chatApi.fetchMessages(messageLimit: 50);
-    //   },
-    // );
+    if (text.startsWith('/')) {
+      try {
+        await chatApi.submitCommand(text: text);
+      } catch (error) {
+        print(error);
+      }
+    } else {
+      await chatApi.submitMessage(text: text);
+      chatApi.fetchMessages(messageLimit: 50);
+    }
+
     _controller.clear();
     myFocusNode.requestFocus();
   }
