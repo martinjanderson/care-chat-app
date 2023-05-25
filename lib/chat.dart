@@ -235,6 +235,8 @@ class _MessageListState extends State<MessageList> {
       } else {
         return 'You - $formattedTime';
       }
+    } else if (message.userId == "command-response") {
+      return 'Command - $formattedTime';
     } else {
       return 'Bot - $formattedTime';
     }
@@ -254,6 +256,8 @@ class _MessageListState extends State<MessageList> {
       } else {
         return 'Y';
       }
+    } else if (message.userId == "command-response") {
+      return 'C';
     } else {
       return 'B';
     }
